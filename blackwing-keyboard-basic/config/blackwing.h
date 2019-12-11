@@ -1,48 +1,48 @@
 
-#define COMPILE_RIGHT
-// #define COMPILE_LEFT
+// #define COMPILE_RIGHT
+#define COMPILE_LEFT
 
 
 #ifdef COMPILE_LEFT
 
 #define PIPE_NUMBER 0
 
-#define S00 27
-#define S01 26
-#define S02 23
-#define S03 22
-#define S04 21
-#define S05 20
+#define S00 16
+#define S01 12
+#define S02 22
+#define S03 17
+#define S04 18
+#define S05 19
 
-#define S10 0
-#define S11 30
-#define S12 24
-#define S13 25
-#define S14 29
-#define S15 28
+#define S10 8
+#define S11 9
+#define S12 10
+#define S13 13
+#define S14 14
+#define S15 15
 
-#define S20 6
-#define S21 5
+#define S20 2
+#define S21 3
 #define S22 4
-#define S23 3
-#define S24 2
-#define S25 1
+#define S23 5
+#define S24 6
+#define S25 7
 
-#define S30 12
-#define S31 11
-#define S32 10
-#define S33 9
-#define S34 8
-#define S35 7
+#define S30 29
+#define S31 25
+#define S32 24
+#define S33 30
+#define S34 0
+#define S35 1
 
-#define S40 18
-#define S41 17
-#define S42 16
-#define S43 15
-#define S44 14
-#define S45 13
+#define S40 27
+#define S41 26
+#define S42 23
+#define S43 22
+#define S44 21
+#define S45 20
 
-#define S50 19
+#define S50 28
 
 #endif
 
@@ -51,42 +51,42 @@
 
 #define PIPE_NUMBER 1
 
-#define S00 15
-#define S01 16
-#define S02 17
-#define S03 18
-#define S04 19
-#define S05 20
+#define S00 26
+#define S01 25
+#define S02 24
+#define S03 23
+#define S04 22
+#define S05 21
 
-#define S10 9
-#define S11 10
-#define S12 11
-#define S13 12
-#define S14 13
-#define S15 14
+#define S10 1
+#define S11 0
+#define S12 30
+#define S13 29
+#define S14 28
+#define S15 27
 
-#define S20 3
-#define S21 4
+#define S20 7
+#define S21 6
 #define S22 5
-#define S23 6
-#define S24 7
-#define S25 8
+#define S23 4
+#define S24 3
+#define S25 2
 
-#define S30 25
-#define S31 24
-#define S32 30
-#define S33 0
-#define S34 1
-#define S35 2
+#define S30 13
+#define S31 12
+#define S32 11
+#define S33 10
+#define S34 9
+#define S35 8
 
-#define S40 22
-#define S41 23
-#define S42 26
-#define S43 27
-#define S44 28
-#define S45 29
+#define S40 15
+#define S41 16
+#define S42 17
+#define S43 18
+#define S44 19
+#define S45 20
 
-#define S50 21
+#define S50 14
 
 #endif
 
