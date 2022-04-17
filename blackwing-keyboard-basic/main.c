@@ -1,8 +1,8 @@
-#include "blackwing.h"
+// #include "blackwing.h"
 #include "nrf_drv_config.h"
 #include "nrf_gzll.h"
 #include "nrf_gpio.h"
-#include "nrf_delay.h"
+// #include "nrf_delay.h"
 #include "nrf_drv_clock.h"
 #include "nrf_drv_rtc.h"
 
@@ -75,47 +75,47 @@ static void gpio_config(void)
 // Return the key states, masked with valid key pins
 static uint32_t read_keys(void)
 {
-    return ~NRF_GPIO->IN & INPUT_MASK;
+    return (nrf_gpio_pin_read(S00) ? 0:1) << 31 |
+           (nrf_gpio_pin_read(S01) ? 0:1) << 30 |
+           (nrf_gpio_pin_read(S02) ? 0:1) << 29 |
+           (nrf_gpio_pin_read(S03) ? 0:1) << 28 |
+           (nrf_gpio_pin_read(S04) ? 0:1) << 27 |
+           (nrf_gpio_pin_read(S05) ? 0:1) << 26 |
+           (nrf_gpio_pin_read(S10) ? 0:1) << 25 |
+           (nrf_gpio_pin_read(S11) ? 0:1) << 24 |
+           (nrf_gpio_pin_read(S12) ? 0:1) << 23 |
+           (nrf_gpio_pin_read(S13) ? 0:1) << 22 |
+           (nrf_gpio_pin_read(S14) ? 0:1) << 21 |
+           (nrf_gpio_pin_read(S15) ? 0:1) << 20 |
+           (nrf_gpio_pin_read(S20) ? 0:1) << 19 |
+           (nrf_gpio_pin_read(S21) ? 0:1) << 18 |
+           (nrf_gpio_pin_read(S22) ? 0:1) << 17 |
+           (nrf_gpio_pin_read(S23) ? 0:1) << 16 |
+           (nrf_gpio_pin_read(S24) ? 0:1) << 15 |
+           (nrf_gpio_pin_read(S25) ? 0:1) << 14 |
+           (nrf_gpio_pin_read(S30) ? 0:1) << 13 |
+           (nrf_gpio_pin_read(S31) ? 0:1) << 12 |
+           (nrf_gpio_pin_read(S32) ? 0:1) << 11 |
+           (nrf_gpio_pin_read(S33) ? 0:1) << 10 |
+           (nrf_gpio_pin_read(S34) ? 0:1) << 9 |
+           (nrf_gpio_pin_read(S35) ? 0:1) << 8 |
+           (nrf_gpio_pin_read(S40) ? 0:1) << 7 |
+           (nrf_gpio_pin_read(S41) ? 0:1) << 6 |
+           (nrf_gpio_pin_read(S42) ? 0:1) << 5 |
+           (nrf_gpio_pin_read(S43) ? 0:1) << 4 |
+           (nrf_gpio_pin_read(S44) ? 0:1) << 3 |
+           (nrf_gpio_pin_read(S45) ? 0:1) << 2 |
+           (nrf_gpio_pin_read(S50) ? 0:1) << 1 |
+           0 << 0;
 }
 
 // Assemble packet and send to receiver
 static void send_data(void)
 {
-    data_payload[0] = ((keys & 1<<S00) ? 1:0) << 7 | \
-                      ((keys & 1<<S01) ? 1:0) << 6 | \
-                      ((keys & 1<<S02) ? 1:0) << 5 | \
-                      ((keys & 1<<S03) ? 1:0) << 4 | \
-                      ((keys & 1<<S04) ? 1:0) << 3 | \
-                      ((keys & 1<<S05) ? 1:0) << 2 | \
-                      ((keys & 1<<S10) ? 1:0) << 1 | \
-                      ((keys & 1<<S11) ? 1:0) << 0;
-
-    data_payload[1] = ((keys & 1<<S12) ? 1:0) << 7 | \
-                      ((keys & 1<<S13) ? 1:0) << 6 | \
-                      ((keys & 1<<S14) ? 1:0) << 5 | \
-                      ((keys & 1<<S15) ? 1:0) << 4 | \
-                      ((keys & 1<<S20) ? 1:0) << 3 | \
-                      ((keys & 1<<S21) ? 1:0) << 2 | \
-                      ((keys & 1<<S22) ? 1:0) << 1 | \
-                      ((keys & 1<<S23) ? 1:0) << 0;
-
-    data_payload[2] = ((keys & 1<<S24) ? 1:0) << 7 | \
-                      ((keys & 1<<S25) ? 1:0) << 6 | \
-                      ((keys & 1<<S30) ? 1:0) << 5 | \
-                      ((keys & 1<<S31) ? 1:0) << 4 | \
-                      ((keys & 1<<S32) ? 1:0) << 3 | \
-                      ((keys & 1<<S33) ? 1:0) << 2 | \
-                      ((keys & 1<<S34) ? 1:0) << 1 | \
-                      ((keys & 1<<S35) ? 1:0) << 0;
-
-    data_payload[3] = ((keys & 1<<S40) ? 1:0) << 7 | \
-                      ((keys & 1<<S41) ? 1:0) << 6 | \
-                      ((keys & 1<<S42) ? 1:0) << 5 | \
-                      ((keys & 1<<S43) ? 1:0) << 4 | \
-                      ((keys & 1<<S44) ? 1:0) << 3 | \
-                      ((keys & 1<<S45) ? 1:0) << 2 | \
-                      ((keys & 1<<S50) ? 1:0) << 1 | \
-                      0 << 0;
+    data_payload[0] = (keys >> 24) & 0xff;
+    data_payload[1] = (keys >> 16) & 0xff;
+    data_payload[2] = (keys >> 8) & 0xff;
+    data_payload[3] = (keys >> 0) & 0xff;
 
     nrf_gzll_add_packet_to_tx_fifo(PIPE_NUMBER, data_payload, TX_PAYLOAD_LENGTH);
 }

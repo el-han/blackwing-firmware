@@ -5,7 +5,7 @@ export OUTPUT_FILENAME
 MAKEFILE_NAME := $(MAKEFILE_LIST)
 MAKEFILE_DIR := $(dir $(MAKEFILE_NAME) )
 
-TEMPLATE_PATH = ../../../../components/toolchain/gcc
+TEMPLATE_PATH = /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain/gcc
 ifeq ($(OS),Windows_NT)
 include $(TEMPLATE_PATH)/Makefile.windows
 else
@@ -37,37 +37,37 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 #source common to all targets
 C_SOURCE_FILES += \
-$(abspath ../../../../components/toolchain/system_nrf51.c) \
+$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain/system_nrf52840.c) \
 $(abspath ../../main.c) \
-$(abspath ../../../../components/drivers_nrf/delay/nrf_delay.c) \
-$(abspath ../../../../components/drivers_nrf/clock/nrf_drv_clock.c) \
-$(abspath ../../../../components/libraries/util/app_util_platform.c) \
-$(abspath ../../../../components/drivers_nrf/common/nrf_drv_common.c) \
-$(abspath ../../../../components/drivers_nrf/rtc/nrf_drv_rtc.c) \
+# $(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/delay/nrf_delay.c) \
+$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/clock/nrf_drv_clock.c) \
+$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/libraries/util/app_util_platform.c) \
+$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/common/nrf_drv_common.c) \
+$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/rtc/nrf_drv_rtc.c) \
 
 
 #assembly files common to all targets
-ASM_SOURCE_FILES  = $(abspath ../../../../components/toolchain/gcc/gcc_startup_nrf51.s)
+ASM_SOURCE_FILES  = $(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain/gcc/gcc_startup_nrf52840.S)
 
 #assembly files common to all targets
-LIBS  = $(abspath ../../../../components/properitary_rf/gzll/gcc/gzll_gcc.a)
+LIBS  = $(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/proprietary_rf/gzll/gcc/gzll_nrf52840_sd_resources_gcc.a)
 
 #includes common to all targets
 INC_PATHS  = -I$(abspath ../../config)
-INC_PATHS += -I$(abspath ../../../../components/device)
-INC_PATHS += -I$(abspath ../../../../components/toolchain/CMSIS/Include)
-INC_PATHS += -I$(abspath ../../../../components/properitary_rf/gzll)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/hal)
-INC_PATHS += -I$(abspath ../../../../components/toolchain/gcc)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/delay)
-INC_PATHS += -I$(abspath ../../../../examples/bsp)
-INC_PATHS += -I$(abspath ../../../../components/toolchain)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/nrf_soc_nosd)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/common)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/clock)
-INC_PATHS += -I$(abspath ../../../../components/libraries/util)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/config)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/rtc)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/device)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain/cmsis/include)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/proprietary_rf/gzll)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/hal)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain/gcc)
+# INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/delay)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/examples/bsp)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/toolchain)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/nrf_soc_nosd)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/common)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/clock)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/libraries/util)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/config)
+INC_PATHS += -I$(abspath /home/helling/nRF5_SDK_17.1.0_ddde560/components/drivers_nrf/rtc)
 
 
 OBJECT_DIRECTORY = _build
@@ -78,7 +78,7 @@ OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
 #flags common to all targets
-CFLAGS  = -DNRF51
+CFLAGS  = -DNRF52840_XXAA
 CFLAGS += -DGAZELL_PRESENT
 CFLAGS += -DBOARD_CUSTOM
 CFLAGS += -DBSP_DEFINES_ONLY
@@ -104,23 +104,23 @@ LDFLAGS += -Wl,--no-wchar-size-warning
 
 # Assembler flags
 ASMFLAGS += -x assembler-with-cpp
-ASMFLAGS += -DNRF51
+ASMFLAGS += -DNRF52840_XXAA
 ASMFLAGS += -DGAZELL_PRESENT
 ASMFLAGS += -DBOARD_CUSTOM
 ASMFLAGS += -DBSP_DEFINES_ONLY
 
 #default target - first one defined
-default: clean nrf51822_xxac
+default: clean nrf52840_xxaa
 
 #building all targets
 all: clean
 	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e cleanobj
-	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e nrf51822_xxac
+	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e nrf52840_xxaa
 
 #target for printing all targets
 help:
 	@echo following targets are available:
-	@echo 	nrf51822_xxac
+	@echo 	nrf52840_xxaa
 
 C_SOURCE_FILE_NAMES = $(notdir $(C_SOURCE_FILES))
 C_PATHS = $(call remduplicates, $(dir $(C_SOURCE_FILES) ) )
@@ -128,17 +128,17 @@ C_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(C_SOURCE_FILE_NAMES:.c=.o) )
 
 ASM_SOURCE_FILE_NAMES = $(notdir $(ASM_SOURCE_FILES))
 ASM_PATHS = $(call remduplicates, $(dir $(ASM_SOURCE_FILES) ))
-ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.s=.o) )
+ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.S=.o) )
 
 vpath %.c $(C_PATHS)
-vpath %.s $(ASM_PATHS)
+vpath %.S $(ASM_PATHS)
 
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 
-nrf51822_xxac: OUTPUT_FILENAME := nrf51822_xxac
-nrf51822_xxac: LINKER_SCRIPT=gzll_gcc_nrf51.ld
+nrf52840_xxaa: OUTPUT_FILENAME := nrf52840_xxaa
+nrf52840_xxaa: LINKER_SCRIPT=gzll_gcc_nrf52.ld
 
-nrf51822_xxac: $(BUILD_DIRECTORIES) $(OBJECTS)
+nrf52840_xxaa: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo Linking target: $(OUTPUT_FILENAME).out
 	$(NO_ECHO)$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -lm -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
 	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e finalize
@@ -154,7 +154,7 @@ $(OBJECT_DIRECTORY)/%.o: %.c
 	$(NO_ECHO)$(CC) $(CFLAGS) $(INC_PATHS) -c -o $@ $<
 
 # Assemble files
-$(OBJECT_DIRECTORY)/%.o: %.s
+$(OBJECT_DIRECTORY)/%.o: %.S
 	@echo Assembly file: $(notdir $<)
 	$(NO_ECHO)$(CC) $(ASMFLAGS) $(INC_PATHS) -c -o $@ $<
 # Link
@@ -191,9 +191,9 @@ clean:
 
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
-flash: nrf51822_xxac
+flash: nrf52840_xxaa
 	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex
-	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf51  --chiperase
-	nrfjprog --reset -f nrf51
+	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52 --chiperase
+	nrfjprog --reset -f nrf52
 
 ## Flash softdevice
