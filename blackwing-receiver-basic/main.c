@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "app_uart.h"
-#include "nrf_drv_uart.h"
-#include "app_error.h"
 #include "nrf_delay.h"
 #include "nrf.h"
 #include "nrf_gzll.h"
@@ -52,17 +50,10 @@ uint8_t c;
 
 
 void uart_error_handle(app_uart_evt_t * p_event)
-{
-    if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR)
-    {
-        APP_ERROR_HANDLER(p_event->data.error_communication);
-    }
-    else if (p_event->evt_type == APP_UART_FIFO_ERROR)
-    {
-        APP_ERROR_HANDLER(p_event->data.error_code);
-    }
-}
+{}
 
+void app_error_handler_bare(uint32_t error_code)
+{}
 
 int main(void)
 {
@@ -84,8 +75,6 @@ int main(void)
                          uart_error_handle,
                          APP_IRQ_PRIORITY_LOW,
                          err_code);
-
-    APP_ERROR_CHECK(err_code);
 
     // Initialize Gazell
     nrf_gzll_init(NRF_GZLL_MODE_HOST);
@@ -192,7 +181,11 @@ int main(void)
         if (app_uart_get(&c) == NRF_SUCCESS && c == 's')
         {
             // sending data to QMK, and an end byte
-            nrf_drv_uart_tx(data_buffer,10);
+            // nrf_drv_uart_tx(data_buffer,10);
+            for (uint8_t i = 0; i < 10; i++)
+            {
+                app_uart_put(data_buffer[i]);
+            }
             app_uart_put(0xE0);
 
             // debugging help, for printing keystates to a serial console

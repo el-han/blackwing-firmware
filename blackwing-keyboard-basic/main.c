@@ -1,18 +1,17 @@
-#include "blackwing.h"
-#include "nrf_drv_config.h"
+#include "sdk_config.h"
+#include "custom_board.h"
+#include "nrfx_rtc.h"
+#include "nrfx_clock.h"
 #include "nrf_gzll.h"
 #include "nrf_gpio.h"
-#include "nrf_delay.h"
-#include "nrf_drv_clock.h"
-#include "nrf_drv_rtc.h"
 
 
 /*****************************************************************************/
 /** Configuration */
 /*****************************************************************************/
 
-const nrf_drv_rtc_t rtc_maint = NRF_DRV_RTC_INSTANCE(0); /**< Declaring an instance of nrf_drv_rtc for RTC0. */
-const nrf_drv_rtc_t rtc_deb = NRF_DRV_RTC_INSTANCE(1); /**< Declaring an instance of nrf_drv_rtc for RTC1. */
+const nrfx_rtc_t rtc_maint = NRFX_RTC_INSTANCE(0); /**< Declaring an instance of nrfx_rtc for RTC0. */
+const nrfx_rtc_t rtc_deb = NRFX_RTC_INSTANCE(1); /**< Declaring an instance of nrfx_rtc for RTC1. */
 
 
 // Define payload length
@@ -30,6 +29,9 @@ static uint8_t ack_payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH]; ///< Placeholder 
 static uint32_t keys, keys_snapshot;
 static uint32_t debounce_ticks, activity_ticks;
 static volatile bool debouncing = false;
+
+void clock_event_handler(nrfx_clock_evt_type_t event)
+{}
 
 // Setup switch pins with pullups
 static void gpio_config(void)
@@ -75,59 +77,59 @@ static void gpio_config(void)
 // Return the key states, masked with valid key pins
 static uint32_t read_keys(void)
 {
-    return ~NRF_GPIO->IN & INPUT_MASK;
+    return (nrf_gpio_pin_read(S00) ? 0:1) << 31 |
+           (nrf_gpio_pin_read(S01) ? 0:1) << 30 |
+           (nrf_gpio_pin_read(S02) ? 0:1) << 29 |
+           (nrf_gpio_pin_read(S03) ? 0:1) << 28 |
+           (nrf_gpio_pin_read(S04) ? 0:1) << 27 |
+           (nrf_gpio_pin_read(S05) ? 0:1) << 26 |
+           (nrf_gpio_pin_read(S10) ? 0:1) << 25 |
+           (nrf_gpio_pin_read(S11) ? 0:1) << 24 |
+           (nrf_gpio_pin_read(S12) ? 0:1) << 23 |
+           (nrf_gpio_pin_read(S13) ? 0:1) << 22 |
+           (nrf_gpio_pin_read(S14) ? 0:1) << 21 |
+           (nrf_gpio_pin_read(S15) ? 0:1) << 20 |
+           (nrf_gpio_pin_read(S20) ? 0:1) << 19 |
+           (nrf_gpio_pin_read(S21) ? 0:1) << 18 |
+           (nrf_gpio_pin_read(S22) ? 0:1) << 17 |
+           (nrf_gpio_pin_read(S23) ? 0:1) << 16 |
+           (nrf_gpio_pin_read(S24) ? 0:1) << 15 |
+           (nrf_gpio_pin_read(S25) ? 0:1) << 14 |
+           (nrf_gpio_pin_read(S30) ? 0:1) << 13 |
+           (nrf_gpio_pin_read(S31) ? 0:1) << 12 |
+           (nrf_gpio_pin_read(S32) ? 0:1) << 11 |
+           (nrf_gpio_pin_read(S33) ? 0:1) << 10 |
+           (nrf_gpio_pin_read(S34) ? 0:1) << 9 |
+           (nrf_gpio_pin_read(S35) ? 0:1) << 8 |
+           (nrf_gpio_pin_read(S40) ? 0:1) << 7 |
+           (nrf_gpio_pin_read(S41) ? 0:1) << 6 |
+           (nrf_gpio_pin_read(S42) ? 0:1) << 5 |
+           (nrf_gpio_pin_read(S43) ? 0:1) << 4 |
+           (nrf_gpio_pin_read(S44) ? 0:1) << 3 |
+           (nrf_gpio_pin_read(S45) ? 0:1) << 2 |
+           (nrf_gpio_pin_read(S50) ? 0:1) << 1 |
+           0 << 0;
 }
 
 // Assemble packet and send to receiver
 static void send_data(void)
 {
-    data_payload[0] = ((keys & 1<<S00) ? 1:0) << 7 | \
-                      ((keys & 1<<S01) ? 1:0) << 6 | \
-                      ((keys & 1<<S02) ? 1:0) << 5 | \
-                      ((keys & 1<<S03) ? 1:0) << 4 | \
-                      ((keys & 1<<S04) ? 1:0) << 3 | \
-                      ((keys & 1<<S05) ? 1:0) << 2 | \
-                      ((keys & 1<<S10) ? 1:0) << 1 | \
-                      ((keys & 1<<S11) ? 1:0) << 0;
-
-    data_payload[1] = ((keys & 1<<S12) ? 1:0) << 7 | \
-                      ((keys & 1<<S13) ? 1:0) << 6 | \
-                      ((keys & 1<<S14) ? 1:0) << 5 | \
-                      ((keys & 1<<S15) ? 1:0) << 4 | \
-                      ((keys & 1<<S20) ? 1:0) << 3 | \
-                      ((keys & 1<<S21) ? 1:0) << 2 | \
-                      ((keys & 1<<S22) ? 1:0) << 1 | \
-                      ((keys & 1<<S23) ? 1:0) << 0;
-
-    data_payload[2] = ((keys & 1<<S24) ? 1:0) << 7 | \
-                      ((keys & 1<<S25) ? 1:0) << 6 | \
-                      ((keys & 1<<S30) ? 1:0) << 5 | \
-                      ((keys & 1<<S31) ? 1:0) << 4 | \
-                      ((keys & 1<<S32) ? 1:0) << 3 | \
-                      ((keys & 1<<S33) ? 1:0) << 2 | \
-                      ((keys & 1<<S34) ? 1:0) << 1 | \
-                      ((keys & 1<<S35) ? 1:0) << 0;
-
-    data_payload[3] = ((keys & 1<<S40) ? 1:0) << 7 | \
-                      ((keys & 1<<S41) ? 1:0) << 6 | \
-                      ((keys & 1<<S42) ? 1:0) << 5 | \
-                      ((keys & 1<<S43) ? 1:0) << 4 | \
-                      ((keys & 1<<S44) ? 1:0) << 3 | \
-                      ((keys & 1<<S45) ? 1:0) << 2 | \
-                      ((keys & 1<<S50) ? 1:0) << 1 | \
-                      0 << 0;
+    data_payload[0] = (keys >> 24) & 0xff;
+    data_payload[1] = (keys >> 16) & 0xff;
+    data_payload[2] = (keys >> 8) & 0xff;
+    data_payload[3] = (keys >> 0) & 0xff;
 
     nrf_gzll_add_packet_to_tx_fifo(PIPE_NUMBER, data_payload, TX_PAYLOAD_LENGTH);
 }
 
 // 8Hz held key maintenance, keeping the reciever keystates valid
-static void handler_maintenance(nrf_drv_rtc_int_type_t int_type)
+static void handler_maintenance(nrfx_rtc_int_type_t int_type)
 {
     send_data();
 }
 
 // 1000Hz debounce sampling
-static void handler_debounce(nrf_drv_rtc_int_type_t int_type)
+static void handler_debounce(nrfx_rtc_int_type_t int_type)
 {
     // debouncing, waits until there have been no transitions in 5ms (assuming five 1ms ticks)
     if (debouncing)
@@ -167,8 +169,8 @@ static void handler_debounce(nrf_drv_rtc_int_type_t int_type)
         activity_ticks++;
         if (activity_ticks > ACTIVITY)
         {
-            nrf_drv_rtc_disable(&rtc_maint);
-            nrf_drv_rtc_disable(&rtc_deb);
+            nrfx_rtc_disable(&rtc_maint);
+            nrfx_rtc_disable(&rtc_deb);
         }
     }
     else
@@ -179,32 +181,40 @@ static void handler_debounce(nrf_drv_rtc_int_type_t int_type)
 }
 
 
-// Low frequency clock configuration
-static void lfclk_config(void)
-{
-    nrf_drv_clock_init();
-
-    nrf_drv_clock_lfclk_request(NULL);
-}
-
 // RTC peripheral configuration
 static void rtc_config(void)
 {
+
+    nrfx_rtc_config_t rtc_maint_config = NRFX_RTC_DEFAULT_CONFIG;
+    nrfx_rtc_config_t rtc_deb_config = NRFX_RTC_DEFAULT_CONFIG;
+
+    rtc_maint_config.prescaler = RTC_FREQ_TO_PRESCALER(8);
+    rtc_deb_config.prescaler = RTC_FREQ_TO_PRESCALER(1000);
+
     //Initialize RTC instance
-    nrf_drv_rtc_init(&rtc_maint, NULL, handler_maintenance);
-    nrf_drv_rtc_init(&rtc_deb, NULL, handler_debounce);
+    nrfx_rtc_init(&rtc_maint, &rtc_maint_config, handler_maintenance);
+    nrfx_rtc_init(&rtc_deb, &rtc_deb_config, handler_debounce);
 
     //Enable tick event & interrupt
-    nrf_drv_rtc_tick_enable(&rtc_maint,true);
-    nrf_drv_rtc_tick_enable(&rtc_deb,true);
-
-    //Power on RTC instance
-    //nrf_drv_rtc_enable(&rtc_maint);
-    //nrf_drv_rtc_enable(&rtc_deb);
+    nrfx_rtc_tick_enable(&rtc_maint, true);
+    nrfx_rtc_tick_enable(&rtc_deb, true);
 }
 
 int main()
 {
+    nrfx_clock_init(clock_event_handler);
+    nrfx_clock_enable();
+
+    // Configure 16MHz xtal oscillator
+    nrfx_clock_hfclk_start();
+    // while (!nrfx_clock_hfclk_is_running())
+    //     ;
+
+    // Configure 32kHz xtal oscillator
+    // nrfx_clock_lfclk_start();
+    // while (!nrfx_clock_lfclk_is_running())
+    //     ;
+
     // Initialize Gazell
     nrf_gzll_init(NRF_GZLL_MODE_DEVICE);
 
@@ -218,8 +228,8 @@ int main()
     // Enable Gazell to start sending over the air
     nrf_gzll_enable();
 
-    // Configure 32kHz xtal oscillator
-    lfclk_config();
+    keys = 1<<11;
+    send_data();
 
     // Configure RTC peripherals with ticks
     rtc_config();
@@ -250,8 +260,8 @@ void GPIOTE_IRQHandler(void)
         NRF_GPIOTE->EVENTS_PORT = 0;
 
         //enable rtc interupt triggers
-        nrf_drv_rtc_enable(&rtc_maint);
-        nrf_drv_rtc_enable(&rtc_deb);
+        nrfx_rtc_enable(&rtc_maint);
+        nrfx_rtc_enable(&rtc_deb);
 
         debouncing = false;
         debounce_ticks = 0;
@@ -287,4 +297,3 @@ void nrf_gzll_host_rx_data_ready(uint32_t pipe, nrf_gzll_host_rx_info_t rx_info)
 {}
 void nrf_gzll_disabled()
 {}
-
