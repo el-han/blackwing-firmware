@@ -2,7 +2,7 @@
 #include "custom_board.h"
 #include "nrf_gzll.h"
 #include "nrf_gpio.h"
-#include "nrf_drv_clock.h"
+#include "nrfx_clock.h"
 #include "nrfx_rtc.h"
 
 
@@ -119,6 +119,10 @@ static void send_data(void)
     nrf_gzll_add_packet_to_tx_fifo(PIPE_NUMBER, data_payload, TX_PAYLOAD_LENGTH);
 }
 
+void clock_event_handler(nrfx_clock_evt_type_t event)
+{
+}
+
 // 8Hz held key maintenance, keeping the reciever keystates valid
 static void handler_maintenance(nrfx_rtc_int_type_t int_type)
 {
@@ -180,9 +184,9 @@ static void handler_debounce(nrfx_rtc_int_type_t int_type)
 // Low frequency clock configuration
 static void lfclk_config(void)
 {
-    nrf_drv_clock_init();
+    nrfx_clock_init(clock_event_handler);
 
-    nrf_drv_clock_lfclk_request(NULL);
+    nrfx_clock_lfclk_start();
 }
 
 // RTC peripheral configuration
