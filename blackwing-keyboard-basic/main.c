@@ -1,18 +1,17 @@
-// #include "blackwing.h"
-#include "nrf_drv_config.h"
+#include "sdk_config.h"
+#include "custom_board.h"
 #include "nrf_gzll.h"
 #include "nrf_gpio.h"
-// #include "nrf_delay.h"
 #include "nrf_drv_clock.h"
-#include "nrf_drv_rtc.h"
+#include "nrfx_rtc.h"
 
 
 /*****************************************************************************/
 /** Configuration */
 /*****************************************************************************/
 
-const nrf_drv_rtc_t rtc_maint = NRF_DRV_RTC_INSTANCE(0); /**< Declaring an instance of nrf_drv_rtc for RTC0. */
-const nrf_drv_rtc_t rtc_deb = NRF_DRV_RTC_INSTANCE(1); /**< Declaring an instance of nrf_drv_rtc for RTC1. */
+const nrfx_rtc_t rtc_maint = NRFX_RTC_INSTANCE(0); /**< Declaring an instance of nrfx_rtc for RTC0. */
+const nrfx_rtc_t rtc_deb = NRFX_RTC_INSTANCE(1); /**< Declaring an instance of nrfx_rtc for RTC1. */
 
 
 // Define payload length
@@ -121,13 +120,13 @@ static void send_data(void)
 }
 
 // 8Hz held key maintenance, keeping the reciever keystates valid
-static void handler_maintenance(nrf_drv_rtc_int_type_t int_type)
+static void handler_maintenance(nrfx_rtc_int_type_t int_type)
 {
     send_data();
 }
 
 // 1000Hz debounce sampling
-static void handler_debounce(nrf_drv_rtc_int_type_t int_type)
+static void handler_debounce(nrfx_rtc_int_type_t int_type)
 {
     // debouncing, waits until there have been no transitions in 5ms (assuming five 1ms ticks)
     if (debouncing)
@@ -167,15 +166,14 @@ static void handler_debounce(nrf_drv_rtc_int_type_t int_type)
         activity_ticks++;
         if (activity_ticks > ACTIVITY)
         {
-            nrf_drv_rtc_disable(&rtc_maint);
-            nrf_drv_rtc_disable(&rtc_deb);
+            nrfx_rtc_disable(&rtc_maint);
+            nrfx_rtc_disable(&rtc_deb);
         }
     }
     else
     {
         activity_ticks = 0;
     }
-
 }
 
 
@@ -190,17 +188,22 @@ static void lfclk_config(void)
 // RTC peripheral configuration
 static void rtc_config(void)
 {
+    nrfx_rtc_config_t rtc_maint_config, rtc_deb_config = NRFX_RTC_DEFAULT_CONFIG;
+
+    rtc_maint_config.prescaler = RTC_FREQ_TO_PRESCALER(32768);
+    rtc_deb_config.prescaler = RTC_FREQ_TO_PRESCALER(32768);
+
     //Initialize RTC instance
-    nrf_drv_rtc_init(&rtc_maint, NULL, handler_maintenance);
-    nrf_drv_rtc_init(&rtc_deb, NULL, handler_debounce);
+    nrfx_rtc_init(&rtc_maint, &rtc_maint_config, handler_maintenance);
+    nrfx_rtc_init(&rtc_deb, &rtc_deb_config, handler_debounce);
 
     //Enable tick event & interrupt
-    nrf_drv_rtc_tick_enable(&rtc_maint,true);
-    nrf_drv_rtc_tick_enable(&rtc_deb,true);
+    nrfx_rtc_tick_enable(&rtc_maint,true);
+    nrfx_rtc_tick_enable(&rtc_deb,true);
 
     //Power on RTC instance
-    //nrf_drv_rtc_enable(&rtc_maint);
-    //nrf_drv_rtc_enable(&rtc_deb);
+    //nrfx_rtc_enable(&rtc_maint);
+    //nrfx_rtc_enable(&rtc_deb);
 }
 
 int main()
@@ -250,16 +253,14 @@ void GPIOTE_IRQHandler(void)
         NRF_GPIOTE->EVENTS_PORT = 0;
 
         //enable rtc interupt triggers
-        nrf_drv_rtc_enable(&rtc_maint);
-        nrf_drv_rtc_enable(&rtc_deb);
+        nrfx_rtc_enable(&rtc_maint);
+        nrfx_rtc_enable(&rtc_deb);
 
         debouncing = false;
         debounce_ticks = 0;
         activity_ticks = 0;
     }
 }
-
-
 
 /*****************************************************************************/
 /** Gazell callback function definitions  */
@@ -287,4 +288,3 @@ void nrf_gzll_host_rx_data_ready(uint32_t pipe, nrf_gzll_host_rx_info_t rx_info)
 {}
 void nrf_gzll_disabled()
 {}
-
