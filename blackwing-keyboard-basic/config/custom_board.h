@@ -22,6 +22,7 @@
 #define S12 NRF_GPIO_PIN_MAP(0, 16)
 #define S13 NRF_GPIO_PIN_MAP(1,  7)
 #define S14 NRF_GPIO_PIN_MAP(0, 26)
+// #define S14 NRF_GPIO_PIN_MAP(1,  6)  // Fix for second broken left half
 #define S15 NRF_GPIO_PIN_MAP(1, 12)
 
 #define S20 NRF_GPIO_PIN_MAP(1,  3)
@@ -36,6 +37,7 @@
 #define S31 NRF_GPIO_PIN_MAP(0, 22)
 #define S32 NRF_GPIO_PIN_MAP(0, 14)
 #define S33 NRF_GPIO_PIN_MAP(0, 24)
+// #define S33 NRF_GPIO_PIN_MAP(0, 15)  // Fix for second broken left half
 #define S34 NRF_GPIO_PIN_MAP(0,  8)
 #define S35 NRF_GPIO_PIN_MAP(0, 11)
 
@@ -79,6 +81,7 @@
 #define S30 NRF_GPIO_PIN_MAP(0,  7)  // 25
 #define S31 NRF_GPIO_PIN_MAP(0,  6)  // 24
 #define S32 NRF_GPIO_PIN_MAP(0, 11)  // 30
+// #define S32 NRF_GPIO_PIN_MAP(1, 11)  // 5  // Fix for second broken right half
 #define S33 NRF_GPIO_PIN_MAP(0, 22)  // 0
 #define S34 NRF_GPIO_PIN_MAP(0, 15)  // 1
 #define S35 NRF_GPIO_PIN_MAP(0, 20)  // 2
@@ -86,6 +89,7 @@
 #define S40 NRF_GPIO_PIN_MAP(0, 12)  // 22
 #define S41 NRF_GPIO_PIN_MAP(0, 23)  // 23
 #define S42 NRF_GPIO_PIN_MAP(0,  8)  // 26
+// #define S42 NRF_GPIO_PIN_MAP(1, 10)  // 26  // Fix for second broken right half
 #define S43 NRF_GPIO_PIN_MAP(0, 27)  // 27
 #define S44 NRF_GPIO_PIN_MAP(1,  8)  // 28
 #define S45 NRF_GPIO_PIN_MAP(0, 17)  // 29
