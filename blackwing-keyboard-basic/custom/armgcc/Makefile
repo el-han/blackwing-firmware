@@ -1,199 +1,138 @@
-PROJECT_NAME := blackwing-keyboard-basic
+PROJECT_NAME     := blackwing-keyboard-basic
+TARGETS          := keyboard
+OUTPUT_DIRECTORY := _build
 
-export OUTPUT_FILENAME
-#MAKEFILE_NAME := $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
-MAKEFILE_NAME := $(MAKEFILE_LIST)
-MAKEFILE_DIR := $(dir $(MAKEFILE_NAME) )
+SDK_ROOT := /home/helling/nRF5_SDK_17.1.0_ddde560
+PROJ_DIR := ../..
 
-TEMPLATE_PATH = ../../../../components/toolchain/gcc
-ifeq ($(OS),Windows_NT)
-include $(TEMPLATE_PATH)/Makefile.windows
-else
-include $(TEMPLATE_PATH)/Makefile.posix
-endif
+$(OUTPUT_DIRECTORY)/keyboard.out: \
+  LINKER_SCRIPT  := gzll_gcc_nrf52.ld
 
-MK := mkdir
-RM := rm -rf
+# Source files common to all targets
+SRC_FILES += \
+  $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
+  $(SDK_ROOT)/components/libraries/util/app_util_platform.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_rtc.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
+  $(PROJ_DIR)/main.c \
+  $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52840.c \
 
-#echo suspend
-ifeq ("$(VERBOSE)","1")
-NO_ECHO :=
-else
-NO_ECHO := @
-endif
+# Include folders common to all targets
+INC_FOLDERS += \
+  $(SDK_ROOT)/components \
+  $(SDK_ROOT)/modules/nrfx \
+  $(PROJ_DIR) \
+  $(PROJ_DIR)/config \
+  $(SDK_ROOT)/components/proprietary_rf/gzll \
+  $(SDK_ROOT)/integration/nrfx \
+  $(SDK_ROOT)/components/libraries/experimental_section_vars \
+  $(SDK_ROOT)/integration/nrfx/legacy \
+  $(SDK_ROOT)/modules/nrfx/mdk \
+  $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
+  $(SDK_ROOT)/modules/nrfx/hal \
+  $(SDK_ROOT)/components/libraries/bsp \
+  $(SDK_ROOT)/modules/nrfx/drivers/include \
+  $(SDK_ROOT)/components/libraries/util \
+  $(SDK_ROOT)/components/libraries/log \
+  $(SDK_ROOT)/components/libraries/log/src \
+  $(SDK_ROOT)/components/toolchain/cmsis/include \
 
-# Toolchain commands
-CC              := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-gcc'
-AS              := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-as'
-AR              := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-ar' -r
-LD              := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-ld'
-NM              := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-nm'
-OBJDUMP         := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-objdump'
-OBJCOPY         := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-objcopy'
-SIZE            := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-size'
+# Libraries common to all targets
+LIB_FILES += \
+  $(SDK_ROOT)/components/proprietary_rf/gzll/gcc/gzll_nrf52840_sd_resources_gcc.a \
 
-#function for removing duplicates in a list
-remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))
+# Optimization flags
+OPT = -O0 -g
+# Uncomment the line below to enable link time optimization
+#OPT += -flto
 
-#source common to all targets
-C_SOURCE_FILES += \
-$(abspath ../../../../components/toolchain/system_nrf51.c) \
-$(abspath ../../main.c) \
-$(abspath ../../../../components/drivers_nrf/delay/nrf_delay.c) \
-$(abspath ../../../../components/drivers_nrf/clock/nrf_drv_clock.c) \
-$(abspath ../../../../components/libraries/util/app_util_platform.c) \
-$(abspath ../../../../components/drivers_nrf/common/nrf_drv_common.c) \
-$(abspath ../../../../components/drivers_nrf/rtc/nrf_drv_rtc.c) \
-
-
-#assembly files common to all targets
-ASM_SOURCE_FILES  = $(abspath ../../../../components/toolchain/gcc/gcc_startup_nrf51.s)
-
-#assembly files common to all targets
-LIBS  = $(abspath ../../../../components/properitary_rf/gzll/gcc/gzll_gcc.a)
-
-#includes common to all targets
-INC_PATHS  = -I$(abspath ../../config)
-INC_PATHS += -I$(abspath ../../../../components/device)
-INC_PATHS += -I$(abspath ../../../../components/toolchain/CMSIS/Include)
-INC_PATHS += -I$(abspath ../../../../components/properitary_rf/gzll)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/hal)
-INC_PATHS += -I$(abspath ../../../../components/toolchain/gcc)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/delay)
-INC_PATHS += -I$(abspath ../../../../examples/bsp)
-INC_PATHS += -I$(abspath ../../../../components/toolchain)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/nrf_soc_nosd)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/common)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/clock)
-INC_PATHS += -I$(abspath ../../../../components/libraries/util)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/config)
-INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/rtc)
-
-
-OBJECT_DIRECTORY = _build
-LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
-OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
-
-# Sorting removes duplicates
-BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
-
-#flags common to all targets
-CFLAGS  = -DNRF51
-CFLAGS += -DGAZELL_PRESENT
+# C flags common to all targets
+CFLAGS += $(OPT)
+CFLAGS += -I$(SDK_ROOT)
 CFLAGS += -DBOARD_CUSTOM
-CFLAGS += -DBSP_DEFINES_ONLY
-CFLAGS += -mcpu=cortex-m0
-CFLAGS += -mthumb -mabi=aapcs --std=gnu99
-CFLAGS += -Wall -Werror -O3 -g3
-CFLAGS += -Wno-unused-function
-CFLAGS += -Wno-unused-variable
-CFLAGS += -mfloat-abi=soft
-# keep every function in separate section. This will allow linker to dump unused functions
+CFLAGS += -DCONFIG_GPIO_AS_PINRESET
+CFLAGS += -DFLOAT_ABI_HARD
+CFLAGS += -DGAZELL_PRESENT
+CFLAGS += -DNRF52840_XXAA
+CFLAGS += -DUSE_SD_HW_RESOURCES
+CFLAGS += -mcpu=cortex-m4
+CFLAGS += -mthumb -mabi=aapcs
+CFLAGS += -Wall
+CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
-CFLAGS += -fno-builtin --short-enums
-# keep every function in separate section. This will allow linker to dump unused functions
-LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_FILENAME).map
-LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
-LDFLAGS += -mcpu=cortex-m0
-# let linker to dump unused sections
+CFLAGS += -fno-builtin -fshort-enums
+
+# C++ flags common to all targets
+CXXFLAGS += $(OPT)
+CXXFLAGS += -I$(SDK_ROOT)
+# Assembler flags common to all targets
+ASMFLAGS += -g
+ASMFLAGS += -mcpu=cortex-m4
+ASMFLAGS += -mthumb -mabi=aapcs
+ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+ASMFLAGS += -DBOARD_CUSTOM
+ASMFLAGS += -DCONFIG_GPIO_AS_PINRESET
+ASMFLAGS += -DFLOAT_ABI_HARD
+ASMFLAGS += -DGAZELL_PRESENT
+ASMFLAGS += -DNRF52840_XXAA
+ASMFLAGS += -DUSE_SD_HW_RESOURCES
+
+# Linker flags
+LDFLAGS += $(OPT)
+LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
+LDFLAGS += -mcpu=cortex-m4
+LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# let linker dump unused sections
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
-LDFLAGS += --specs=nano.specs -lc -lnosys
-#suppress wchar errors
-LDFLAGS += -Wl,--no-wchar-size-warning
+LDFLAGS += --specs=nano.specs
 
-# Assembler flags
-ASMFLAGS += -x assembler-with-cpp
-ASMFLAGS += -DNRF51
-ASMFLAGS += -DGAZELL_PRESENT
-ASMFLAGS += -DBOARD_CUSTOM
-ASMFLAGS += -DBSP_DEFINES_ONLY
+keyboard: CFLAGS += -D__HEAP_SIZE=8192
+keyboard: CFLAGS += -D__STACK_SIZE=8192
+keyboard: ASMFLAGS += -D__HEAP_SIZE=8192
+keyboard: ASMFLAGS += -D__STACK_SIZE=8192
 
-#default target - first one defined
-default: clean nrf51822_xxac
+# Add standard libraries at the very end of the linker input, after all objects
+# that may need symbols provided by these libraries.
+LIB_FILES += -lc -lnosys -lm
 
-#building all targets
-all: clean
-	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e cleanobj
-	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e nrf51822_xxac
 
-#target for printing all targets
+.PHONY: default help
+
+# Default target - first one defined
+default: keyboard
+
+# Print all targets that can be built
 help:
 	@echo following targets are available:
-	@echo 	nrf51822_xxac
+	@echo		keyboard
+	@echo		sdk_config - starting external tool for editing sdk_config.h
+	@echo		flash      - flashing binary
 
-C_SOURCE_FILE_NAMES = $(notdir $(C_SOURCE_FILES))
-C_PATHS = $(call remduplicates, $(dir $(C_SOURCE_FILES) ) )
-C_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(C_SOURCE_FILE_NAMES:.c=.o) )
+TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
 
-ASM_SOURCE_FILE_NAMES = $(notdir $(ASM_SOURCE_FILES))
-ASM_PATHS = $(call remduplicates, $(dir $(ASM_SOURCE_FILES) ))
-ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.s=.o) )
 
-vpath %.c $(C_PATHS)
-vpath %.s $(ASM_PATHS)
+include $(TEMPLATE_PATH)/Makefile.common
 
-OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
+$(foreach target, $(TARGETS), $(call define_target, $(target)))
 
-nrf51822_xxac: OUTPUT_FILENAME := nrf51822_xxac
-nrf51822_xxac: LINKER_SCRIPT=gzll_gcc_nrf51.ld
+.PHONY: flash erase
 
-nrf51822_xxac: $(BUILD_DIRECTORIES) $(OBJECTS)
-	@echo Linking target: $(OUTPUT_FILENAME).out
-	$(NO_ECHO)$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -lm -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
-	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e finalize
+# Flash the program
+flash: default
+	@echo Flashing: $(OUTPUT_DIRECTORY)/keyboard.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/keyboard.hex --sectorerase
+	nrfjprog -f nrf52 --reset
 
-## Create build directories
-$(BUILD_DIRECTORIES):
-	echo $(MAKEFILE_NAME)
-	$(MK) $@
+flash_over_usb: default
+	@echo Flashing: $(OUTPUT_DIRECTORY)/keyboard.hex
+	nrfutil pkg generate --hw-version 52 --sd-req 0x00 --application-version 0 --application $(OUTPUT_DIRECTORY)/keyboard.hex $(OUTPUT_DIRECTORY)/keyboard.zip --key-file private.pem
+	nrfutil dfu serial -pkg $(OUTPUT_DIRECTORY)/keyboard.zip -p /dev/ttyACM3
 
-# Create objects from C SRC files
-$(OBJECT_DIRECTORY)/%.o: %.c
-	@echo Compiling file: $(notdir $<)
-	$(NO_ECHO)$(CC) $(CFLAGS) $(INC_PATHS) -c -o $@ $<
 
-# Assemble files
-$(OBJECT_DIRECTORY)/%.o: %.s
-	@echo Assembly file: $(notdir $<)
-	$(NO_ECHO)$(CC) $(ASMFLAGS) $(INC_PATHS) -c -o $@ $<
-# Link
-$(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out: $(BUILD_DIRECTORIES) $(OBJECTS)
-	@echo Linking target: $(OUTPUT_FILENAME).out
-	$(NO_ECHO)$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -lm -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
-## Create binary .bin file from the .out file
-$(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
-	@echo Preparing: $(OUTPUT_FILENAME).bin
-	$(NO_ECHO)$(OBJCOPY) -O binary $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin
-
-## Create binary .hex file from the .out file
-$(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
-	@echo Preparing: $(OUTPUT_FILENAME).hex
-	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
-
-finalize: genbin genhex echosize
-
-genbin:
-	@echo Preparing: $(OUTPUT_FILENAME).bin
-	$(NO_ECHO)$(OBJCOPY) -O binary $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin
-
-## Create binary .hex file from the .out file
-genhex:
-	@echo Preparing: $(OUTPUT_FILENAME).hex
-	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
-echosize:
-	-@echo ''
-	$(NO_ECHO)$(SIZE) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out
-	-@echo ''
-
-clean:
-	$(RM) $(BUILD_DIRECTORIES)
-
-cleanobj:
-	$(RM) $(BUILD_DIRECTORIES)/*.o
-flash: nrf51822_xxac
-	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex
-	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf51  --chiperase
-	nrfjprog --reset -f nrf51
-
-## Flash softdevice
+SDK_CONFIG_FILE := $(PROJ_DIR)/config/sdk_config.h
+CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
+sdk_config:
+	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
